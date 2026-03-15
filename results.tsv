@@ -7,3 +7,4 @@ d493259	1.484015	21.2	keep	batch size 2^13 with device_batch=4
 c049755	1.482519	21.2	keep	lower matrix LR to 0.02
 079184f	1.442207	21.2	keep	add 5% warmup
 db6b3a9	1.434080	21.2	keep	reduce weight decay from 0.2 to 0.1
+7253ca8	1.416087	20.7	keep	reduce MLP ratio from 4x to 3x
