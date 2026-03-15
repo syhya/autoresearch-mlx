@@ -3,3 +3,4 @@ commit	val_bpb	memory_gb	status	description
 604b30d	1.713575	21.2	keep	halve total batch size to 2^15
 dd64c50	1.689240	21.2	keep	remove logit soft-capping
 dfdafe6	1.621471	21.2	keep	halve batch size again to 2^14 with device_batch=8
+d493259	1.484015	21.2	keep	batch size 2^13 with device_batch=4
