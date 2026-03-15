@@ -1,3 +1,4 @@
 commit	val_bpb	memory_gb	status	description
 573f4f1	2.078542	21.2	keep	baseline
 604b30d	1.713575	21.2	keep	halve total batch size to 2^15
+dd64c50	1.689240	21.2	keep	remove logit soft-capping
