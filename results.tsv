@@ -10,3 +10,4 @@ db6b3a9	1.434080	21.2	keep	reduce weight decay from 0.2 to 0.1
 7253ca8	1.416087	20.7	keep	reduce MLP ratio from 4x to 3x
 c744958	1.402759	26.1	keep	remove x0 residual stream + bfloat16 masks
 4c00cd8	1.400322	26.1	keep	remove norm after embedding (simpler and better)
+f289462	1.380556	26.1	keep	Muon optimizer for matrix params with matrix_lr=0.05

@@ -218,10 +218,30 @@ class GPT(nn.Module):
         return mx.sum(ce) / denom
 
 
-class AdamW:
-    def __init__(self, model, unembedding_lr, embedding_lr, matrix_lr, weight_decay, adam_betas, scalar_lr):
+def newton_schulz(G, num_iters=5):
+    """Newton-Schulz iteration for polar decomposition (orthogonal factor)."""
+    a, b, c = (3.4445, -4.7750, 2.0315)
+    transposed = False
+    if G.shape[0] < G.shape[1]:
+        G = G.T
+        transposed = True
+    nrm = mx.sqrt(mx.sum(G * G)) + 1e-7
+    X = G / nrm
+    for _ in range(num_iters):
+        A = X @ X.T
+        X = a * X + b * (A @ X) + c * (A @ (A @ X))
+    if transposed:
+        X = X.T
+    return X
+
+
+class HybridOptimizer:
+    """Muon for matrix params in blocks, AdamW for everything else."""
+
+    def __init__(self, model, unembedding_lr, embedding_lr, matrix_lr, weight_decay, adam_betas, scalar_lr, muon_momentum=0.95):
         self.param_config = {}
         self.adam_state = {}
+        self.muon_state = {}
 
         model_dim = model.config.n_embd
         dmodel_lr_scale = (model_dim / 768) ** -0.5
@@ -231,9 +251,9 @@ class AdamW:
             if "blocks" in path and param.ndim == 2:
                 self.param_config[path] = {
                     "lr": matrix_lr,
-                    "betas": adam_betas,
-                    "eps": 1e-10,
                     "weight_decay": weight_decay,
+                    "type": "muon",
+                    "momentum": muon_momentum,
                 }
             elif "wte" in path:
                 self.param_config[path] = {
@@ -241,6 +261,7 @@ class AdamW:
                     "betas": adam_betas,
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
             elif "value_embeds" in path:
                 self.param_config[path] = {
@@ -248,6 +269,7 @@ class AdamW:
                     "betas": adam_betas,
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
             elif "lm_head" in path:
                 self.param_config[path] = {
@@ -255,6 +277,7 @@ class AdamW:
                     "betas": adam_betas,
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
             elif "resid_lambdas" in path:
                 self.param_config[path] = {
@@ -262,6 +285,7 @@ class AdamW:
                     "betas": adam_betas,
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
             elif "x0_lambdas" in path:
                 self.param_config[path] = {
@@ -269,6 +293,7 @@ class AdamW:
                     "betas": (0.96, 0.95),
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
             else:
                 self.param_config[path] = {
@@ -276,6 +301,7 @@ class AdamW:
                     "betas": adam_betas,
                     "eps": 1e-10,
                     "weight_decay": 0.0,
+                    "type": "adamw",
                 }
 
         self.initial_lrs = {path: config["lr"] for path, config in self.param_config.items()}
@@ -296,7 +322,7 @@ class AdamW:
         else:
             setattr(obj, last, value)
 
-    def _step(self, path, grad, param, config):
+    def _adamw_step(self, path, grad, param, config):
         grad_f32 = grad.astype(mx.float32)
         param_f32 = param.astype(mx.float32)
         lr = config["lr"]
@@ -325,6 +351,23 @@ class AdamW:
         param_f32 = param_f32 - step_size * (state["m"] / denom)
         return param_f32.astype(param.dtype)
 
+    def _muon_step(self, path, grad, param, config):
+        grad_f32 = grad.astype(mx.float32)
+        param_f32 = param.astype(mx.float32)
+        lr = config["lr"]
+        momentum = config["momentum"]
+        weight_decay = config["weight_decay"]
+
+        if path not in self.muon_state:
+            self.muon_state[path] = {"buf": mx.zeros_like(grad_f32)}
+
+        state = self.muon_state[path]
+        state["buf"] = momentum * state["buf"] + grad_f32
+        update = newton_schulz(state["buf"])
+        param_f32 = param_f32 * (1 - lr * weight_decay)
+        param_f32 = param_f32 - lr * update
+        return param_f32.astype(param.dtype)
+
     def update(self, model, grads):
         flat_grads = dict(tree_flatten(grads))
         flat_params = dict(tree_flatten(model.parameters()))
@@ -333,7 +376,10 @@ class AdamW:
                 continue
             config = self.param_config[path]
             param = flat_params[path]
-            new_param = self._step(path, grad, param, config)
+            if config["type"] == "muon":
+                new_param = self._muon_step(path, grad, param, config)
+            else:
+                new_param = self._adamw_step(path, grad, param, config)
             self._set_path_value(model, path, new_param)
 
     def set_lr_multiplier(self, multiplier):
@@ -345,6 +391,8 @@ class AdamW:
         arrays = []
         for state in self.adam_state.values():
             arrays.extend([state["m"], state["v"]])
+        for state in self.muon_state.values():
+            arrays.append(state["buf"])
         return arrays
 
 
@@ -361,7 +409,7 @@ WINDOW_PATTERN = "SSSL"
 TOTAL_BATCH_SIZE = 2**13
 EMBEDDING_LR = 0.6
 UNEMBEDDING_LR = 0.004
-MATRIX_LR = 0.02
+MATRIX_LR = 0.05
 SCALAR_LR = 0.5
 WEIGHT_DECAY = 0.1
 ADAM_BETAS = (0.8, 0.95)
@@ -415,7 +463,7 @@ tokens_per_fwdbwd = DEVICE_BATCH_SIZE * MAX_SEQ_LEN
 assert TOTAL_BATCH_SIZE % tokens_per_fwdbwd == 0
 grad_accum_steps = TOTAL_BATCH_SIZE // tokens_per_fwdbwd
 
-optimizer = AdamW(
+optimizer = HybridOptimizer(
     model,
     unembedding_lr=UNEMBEDDING_LR,
     embedding_lr=EMBEDDING_LR,
