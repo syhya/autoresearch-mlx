@@ -197,7 +197,6 @@ class GPT(nn.Module):
         masks = self._get_masks(seq_len)
 
         x = self.wte(idx)
-        x = norm(x)
         for i, block in enumerate(self.blocks):
             ve = self.value_embeds[str(i)](idx) if str(i) in self.value_embeds else None
             x = block(x, ve, masks[i])
