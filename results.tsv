@@ -15,3 +15,4 @@ f289462	1.380556	26.1	keep	Muon optimizer for matrix params with matrix_lr=0.05
 4b81769	1.354400	26.1	keep	weight decay 0.05 with Muon
 b1ca669	1.344766	26.1	keep	weight decay 0.02 with Muon
 a9bd38e	1.342700	26.1	keep	no weight decay with Muon
+99728d1	1.340122	26.1	keep	warmup 10% with Muon
