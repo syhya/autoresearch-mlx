@@ -21,3 +21,4 @@ dcc57b6	1.338912	26.1	keep	embedding LR 0.4
 471d06a	1.333884	25.9	keep	MLP ratio 2x with Muon
 94d97ac	1.324896	25.9	keep	batch 2^14 device_batch=8
 9671357	1.323732	25.9	keep	tiny weight decay 0.01 on Muon params
+2e801c5	1.323657	25.9	keep	unembedding LR 0.003
