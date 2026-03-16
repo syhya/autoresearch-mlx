@@ -23,3 +23,4 @@ dcc57b6	1.338912	26.1	keep	embedding LR 0.4
 9671357	1.323732	25.9	keep	tiny weight decay 0.01 on Muon params
 2e801c5	1.323657	25.9	keep	unembedding LR 0.003
 14066c0	1.323228	26.0	keep	MLP 2.5x
+1ec0a40	1.323197	25.9	keep	MLP 2.25x
