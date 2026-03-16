@@ -12,3 +12,4 @@ c744958	1.402759	26.1	keep	remove x0 residual stream + bfloat16 masks
 4c00cd8	1.400322	26.1	keep	remove norm after embedding (simpler and better)
 f289462	1.380556	26.1	keep	Muon optimizer for matrix params with matrix_lr=0.05
 83f7a09	1.370248	26.1	keep	Muon matrix_lr=0.03
+4b81769	1.354400	26.1	keep	weight decay 0.05 with Muon
