@@ -20,3 +20,4 @@ a9bd38e	1.342700	26.1	keep	no weight decay with Muon
 dcc57b6	1.338912	26.1	keep	embedding LR 0.4
 471d06a	1.333884	25.9	keep	MLP ratio 2x with Muon
 94d97ac	1.324896	25.9	keep	batch 2^14 device_batch=8
+9671357	1.323732	25.9	keep	tiny weight decay 0.01 on Muon params
