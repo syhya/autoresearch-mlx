@@ -28,7 +28,6 @@ class GPTConfig:
     n_kv_head: int = 6
     n_embd: int = 768
     window_pattern: str = "SSSL"
-    use_value_embeds: bool = True
 
 
 def norm(x):
@@ -74,7 +73,7 @@ class CausalSelfAttention(nn.Module):
         self.ve_gate_channels = 32
         self.ve_gate = (
             nn.Linear(self.ve_gate_channels, self.n_kv_head, bias=False)
-            if config.use_value_embeds and has_ve(layer_idx, config.n_layer)
+            if has_ve(layer_idx, config.n_layer)
             else None
         )
         self.rope = nn.RoPE(self.head_dim, traditional=True, base=10000)
@@ -143,7 +142,7 @@ class GPT(nn.Module):
         self.value_embeds = {
             str(i): nn.Embedding(config.vocab_size, kv_dim)
             for i in range(config.n_layer)
-            if config.use_value_embeds and has_ve(i, config.n_layer)
+            if has_ve(i, config.n_layer)
         }
         self._mask_cache = {}
 
@@ -406,7 +405,6 @@ class HybridOptimizer:
 ASPECT_RATIO = 64
 HEAD_DIM = 128
 WINDOW_PATTERN = "SSSL"
-USE_VALUE_EMBEDS = False
 
 # v0.1: AdamW only. Muon port is future work.
 TOTAL_BATCH_SIZE = 2**14
@@ -455,7 +453,6 @@ config = GPTConfig(
     n_kv_head=model_dim // HEAD_DIM,
     n_embd=model_dim,
     window_pattern=WINDOW_PATTERN,
-    use_value_embeds=USE_VALUE_EMBEDS,
 )
 
 model = GPT(config)

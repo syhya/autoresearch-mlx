@@ -31,3 +31,4 @@ cbb4583	1.333813	25.9	discard	sharper attention with 512-token short window
 d96041f	1.337514	25.9	discard	depth 3 with matrix_lr 0.02
 60c5ce6	1.369159	25.9	discard	halve head dim to 64 for 4 heads
 6f8f978	1.329227	25.9	discard	remove unused residual scalar params
+5f72d20	1.381321	25.9	discard	disable value embeddings
