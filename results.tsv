@@ -36,3 +36,4 @@ d96041f	1.337514	25.9	discard	depth 3 with matrix_lr 0.02
 fb4312a	1.321805	25.9	discard	depth 3 with final LR frac 0.2
 c6558aa	1.320468	25.9	keep	rerun depth 3 with final LR frac 0.2
 bd02f43	1.322644	25.9	discard	final LR frac 0.25 on depth 3
+1c73788	1.329984	25.9	discard	warmup 20% on depth 3 final LR 0.2
