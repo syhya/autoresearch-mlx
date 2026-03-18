@@ -42,3 +42,4 @@ dac2e60	1.320964	25.9	discard	warmdown 40% on depth 3 final LR 0.2
 f844f56	1.330165	25.9	discard	final LR frac 0.15 on depth 3
 1470741	1.327631	25.9	discard	full attention at depth 3
 9bfbb97	1.320107	25.9	keep	warmdown 60% on depth 3 final LR 0.2
+b771aaa	1.326134	25.9	discard	rerun warmdown 60% on depth 3 final LR 0.2
