@@ -135,6 +135,8 @@ class GPT(nn.Module):
         self.wte = nn.Embedding(config.vocab_size, config.n_embd)
         self.blocks = [Block(config, i) for i in range(config.n_layer)]
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+        self.resid_lambdas = mx.ones((config.n_layer,), dtype=mx.float32)
+        self.x0_lambdas = mx.zeros((config.n_layer,), dtype=mx.float32)
         head_dim = config.n_embd // config.n_head
         kv_dim = config.n_kv_head * head_dim
         self.value_embeds = {
@@ -160,6 +162,9 @@ class GPT(nn.Module):
             block.mlp.c_proj.weight = mx.zeros_like(block.mlp.c_proj.weight).astype(mx.bfloat16)
             if block.attn.ve_gate is not None:
                 block.attn.ve_gate.weight = mx.zeros_like(block.attn.ve_gate.weight).astype(mx.bfloat16)
+
+        self.resid_lambdas = mx.ones((self.config.n_layer,), dtype=mx.float32)
+        self.x0_lambdas = mx.full((self.config.n_layer,), 0.1, dtype=mx.float32)
 
         for ve in self.value_embeds.values():
             ve.weight = mx.random.uniform(-scale, scale, ve.weight.shape).astype(mx.bfloat16)
@@ -271,6 +276,22 @@ class HybridOptimizer:
                 self.param_config[path] = {
                     "lr": unembedding_lr * dmodel_lr_scale,
                     "betas": adam_betas,
+                    "eps": 1e-10,
+                    "weight_decay": 0.0,
+                    "type": "adamw",
+                }
+            elif "resid_lambdas" in path:
+                self.param_config[path] = {
+                    "lr": scalar_lr * 0.01,
+                    "betas": adam_betas,
+                    "eps": 1e-10,
+                    "weight_decay": 0.0,
+                    "type": "adamw",
+                }
+            elif "x0_lambdas" in path:
+                self.param_config[path] = {
+                    "lr": scalar_lr,
+                    "betas": (0.96, 0.95),
                     "eps": 1e-10,
                     "weight_decay": 0.0,
                     "type": "adamw",
