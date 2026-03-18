@@ -26,3 +26,4 @@ dcc57b6	1.338912	26.1	keep	embedding LR 0.4
 1ec0a40	1.323197	25.9	keep	MLP 2.25x
 bc00c8b	1.321158	25.9	keep	final LR frac 0.05
 d4132a5	1.319656	25.9	keep	final LR frac 0.1
+c9828b2	1.329301	25.9	discard	reduce depth from 4 to 3
