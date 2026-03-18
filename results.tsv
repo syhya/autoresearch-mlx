@@ -37,3 +37,4 @@ fb4312a	1.321805	25.9	discard	depth 3 with final LR frac 0.2
 c6558aa	1.320468	25.9	keep	rerun depth 3 with final LR frac 0.2
 bd02f43	1.322644	25.9	discard	final LR frac 0.25 on depth 3
 1c73788	1.329984	25.9	discard	warmup 20% on depth 3 final LR 0.2
+bfb1168	1.335193	25.9	discard	batch 2^13 with device_batch 4 on depth 3
