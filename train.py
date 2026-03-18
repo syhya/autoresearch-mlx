@@ -28,7 +28,6 @@ class GPTConfig:
     n_kv_head: int = 6
     n_embd: int = 768
     window_pattern: str = "SSSL"
-    short_window_size: int | None = None
 
 
 def norm(x):
@@ -174,7 +173,7 @@ class GPT(nn.Module):
         pattern = config.window_pattern.upper()
         assert all(char in "SL" for char in pattern)
         long_window = config.sequence_len
-        short_window = config.short_window_size or (long_window // 2)
+        short_window = long_window // 2
         char_to_window = {"L": long_window, "S": short_window}
         window_sizes = []
         for layer_idx in range(config.n_layer):
@@ -406,7 +405,6 @@ class HybridOptimizer:
 ASPECT_RATIO = 64
 HEAD_DIM = 128
 WINDOW_PATTERN = "SSSL"
-SHORT_WINDOW_SIZE = 512
 
 # v0.1: AdamW only. Muon port is future work.
 TOTAL_BATCH_SIZE = 2**14
@@ -455,7 +453,6 @@ config = GPTConfig(
     n_kv_head=model_dim // HEAD_DIM,
     n_embd=model_dim,
     window_pattern=WINDOW_PATTERN,
-    short_window_size=SHORT_WINDOW_SIZE,
 )
 
 model = GPT(config)
