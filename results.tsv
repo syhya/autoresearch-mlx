@@ -28,3 +28,4 @@ bc00c8b	1.321158	25.9	keep	final LR frac 0.05
 d4132a5	1.319656	25.9	keep	final LR frac 0.1
 c9828b2	1.329301	25.9	discard	reduce depth from 4 to 3
 cbb4583	1.333813	25.9	discard	sharper attention with 512-token short window
+d96041f	1.337514	25.9	discard	depth 3 with matrix_lr 0.02
